@@ -6,13 +6,13 @@ import { useEffect } from "react";
 
 export function ConnectPoktModal(props: ModalProps) {
     const { connectLedgerDevice, isUsingHardwareWallet } = useTransport()
-    const { connectPocketWallet, poktAddress } = usePocketWallet()
+    const { connectPocketWallet, poktAddress, poktNetwork } = usePocketWallet()
 
     const poktWalletOptions = [
         {
             name: "SendWallet / NodeWallet",
-            onConnect: async () => {
-                await connectPocketWallet()
+            onConnect: () => {
+                connectPocketWallet()
             }
         },
         {
@@ -25,8 +25,8 @@ export function ConnectPoktModal(props: ModalProps) {
 
     useEffect(() => {
         if (isUsingHardwareWallet) connectPocketWallet()
-        if (poktAddress) props.onClose()
-    }, [poktAddress, isUsingHardwareWallet])
+        if (poktAddress && poktNetwork) props.onClose()
+    }, [poktAddress, poktNetwork, isUsingHardwareWallet])
 
     return (
         <Modal {...props} size="md" isCentered>

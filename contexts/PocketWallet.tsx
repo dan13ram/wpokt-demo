@@ -55,16 +55,12 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
   const { isUsingHardwareWallet, removeTransport, poktAddressHW, sendTransaction: sendPoktFromLedger } = useTransport();
   const [poktAddress, setPoktAddress] = useState<string>('');
   const [poktNetwork, setPoktNetwork] = useState<string>('');
-  // const [isUsingHardwareWallet, setIsUsingHardwareWallet] = useState<boolean>(false)
-  // const [pocketApp, setPocketApp] = useState<AppPokt>();
-  // const [isSigningTx, setIsSigningTx] = useState<boolean>(false)
 
   const toast = useToast();
 
   const connectPocketWallet = useCallback(async () => {
     if (isUsingHardwareWallet) {
       setPoktAddress(poktAddressHW);
-      console.log(POKT_CHAIN_ID.toLowerCase())
       setPoktNetwork(POKT_CHAIN_ID.toLowerCase());
     } else {
       if (window.pocketNetwork === undefined) {
@@ -124,7 +120,7 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         setPoktNetwork('');
       }
     }
-  }, [toast]);
+  }, [toast, isUsingHardwareWallet]);
 
   const fetchPoktBalance = useCallback(
     async (address: string): Promise<undefined | bigint> => {
@@ -132,6 +128,7 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         let balance = BigInt(0)
         let balanceResponse;
         try {
+          if (!address) return BigInt(0);
           const poktGatewayUrl = POKT_RPC_URL;
           const res = await fetch(`${poktGatewayUrl}/v1/query/balance`, {
             method: "POST",
@@ -139,7 +136,7 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              address: poktAddress,
+              address,
               height: 0,
             }),
           })
