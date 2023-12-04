@@ -27,6 +27,7 @@ import { PAGE_MAX_WIDTH, PAGE_PADDING_X } from '@/utils/theme';
 import { EthIcon } from './EthIcon';
 import { PocketWalletModal } from './PocketWalletModal';
 import { PoktIcon } from './PoktIcon';
+import { ConnectPoktModal } from './ConnectPoktModal';
 
 const InvalidNetwork: React.FC = () => {
   const { isLoading, switchNetwork } = useSwitchNetwork();
@@ -105,6 +106,7 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
   const { open } = useWeb3Modal();
 
   const { poktAddress, connectPocketWallet } = usePocketWallet();
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <>
@@ -130,7 +132,8 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
             {!poktAddress && (
               <Button
                 leftIcon={<PoktIcon boxSize="1.25rem" />}
-                onClick={connectPocketWallet}
+                // onClick={connectPocketWallet}
+                onClick={onOpen}
                 colorScheme="blue"
               >
                 Connect POKT Wallet
@@ -140,6 +143,7 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
         </VStack>
       )}
       {(!!address || !!poktAddress) && <InvalidNetwork />}
+      <ConnectPoktModal isOpen={isOpen} onClose={onClose}><></></ConnectPoktModal>
       {children}
     </>
   );
