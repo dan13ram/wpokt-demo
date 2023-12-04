@@ -42,9 +42,9 @@ if (!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
   );
 }
 
-if (!process.env.NEXT_PUBLIC_POCKET_RPC_URL) {
+if (!process.env.NEXT_PUBLIC_POKT_RPC_URL) {
   throw new Error(
-    'Environment variable NEXT_PUBLIC_POCKET_RPC_URL is not set',
+    'Environment variable NEXT_PUBLIC_POKT_RPC_URL is not set',
   );
 }
 
@@ -73,7 +73,7 @@ export const ETH_NETWORK_LABEL = ((): string => {
 })();
 
 export const POKT_CHAIN_ID = process.env.NEXT_PUBLIC_POKT_CHAIN_ID;
-export const POKT_RPC_URL = process.env.NEXT_PUBLIC_POCKET_RPC_URL;
+export const POKT_RPC_URL = process.env.NEXT_PUBLIC_POKT_RPC_URL;
 export const POKT_MULTISIG_ADDRESS =
   process.env.NEXT_PUBLIC_POKT_MULTISIG_ADDRESS.toLowerCase();
 export const POKT_CONFIRMATIONS = Number(
