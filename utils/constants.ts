@@ -43,9 +43,7 @@ if (!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
 }
 
 if (!process.env.NEXT_PUBLIC_POKT_RPC_URL) {
-  throw new Error(
-    'Environment variable NEXT_PUBLIC_POKT_RPC_URL is not set',
-  );
+  throw new Error('Environment variable NEXT_PUBLIC_POKT_RPC_URL is not set');
 }
 
 export const WRAPPED_POCKET_ADDRESS =

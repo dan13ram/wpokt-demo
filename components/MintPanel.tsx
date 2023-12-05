@@ -402,8 +402,8 @@ export const MintPanel: React.FC = () => {
                               isMintNotReady
                                 ? 'Please complete previous mints first'
                                 : isMintCompleted
-                                ? 'Mint completed, please wait for validators to mark it as complete'
-                                : ''
+                                  ? 'Mint completed, please wait for validators to mark it as complete'
+                                  : ''
                             }
                           >
                             <Button
@@ -528,8 +528,8 @@ export const MintPanel: React.FC = () => {
                                 isMintNotReady
                                   ? 'Please complete previous mints first'
                                   : isMintCompleted
-                                  ? 'Mint completed, please wait for validators to mark it as complete'
-                                  : ''
+                                    ? 'Mint completed, please wait for validators to mark it as complete'
+                                    : ''
                               }
                             >
                               <Button

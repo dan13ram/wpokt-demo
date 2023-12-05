@@ -1,4 +1,5 @@
-import { POKT_RPC_URL, POKT_CHAIN_ID } from "@/utils/constants";
+/* eslint-disable */
+import { POKT_CHAIN_ID, POKT_RPC_URL } from '@/utils/constants';
 
 // Description: Configuration file for the Pocket Network data source.
 export const Config = {
@@ -16,4 +17,4 @@ export const Config = {
   HTTP_TIMEOUT: '0',
   HTTP_HEADERS: '{"Content-Type": "application/json"}',
   USE_LEGACY_CODEC: 'false',
-}
+};

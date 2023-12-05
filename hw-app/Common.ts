@@ -1,3 +1,4 @@
+/* eslint-disable */
 /********************************************************************************
  *   Ledger Node JS API
  *   (c) 2016-2017 Ledger
@@ -14,8 +15,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ********************************************************************************/
-import type Transport from "@ledgerhq/hw-transport";
-import sha256 from "fast-sha256";
+import type Transport from '@ledgerhq/hw-transport';
+import sha256 from 'fast-sha256';
 
 export type GetPublicKeyResult = {
   publicKey: Uint8Array;
@@ -43,14 +44,19 @@ export class Common {
   appName: string | null;
   verbose: boolean | null;
 
-  constructor(transport: Transport, scrambleKey: string, appName: string | null = null, verbosity: boolean | null = null) {
+  constructor(
+    transport: Transport,
+    scrambleKey: string,
+    appName: string | null = null,
+    verbosity: boolean | null = null,
+  ) {
     this.transport = transport;
     this.appName = appName;
     this.verbose = verbosity === true;
     transport.decorateAppAPIMethods(
       this,
-      ["verifyAddress", "getPublicKey", "signTransaction", "getVersion"],
-      scrambleKey
+      ['verifyAddress', 'getPublicKey', 'signTransaction', 'getVersion'],
+      scrambleKey,
     );
   }
 
@@ -60,20 +66,16 @@ export class Common {
    *
    * @param path - the path to retrieve.
    */
-  async verifyAddress(
-    path: string,
-  ): Promise<GetPublicKeyResult> {
+  async verifyAddress(path: string): Promise<GetPublicKeyResult> {
     return this.getPublicKeyInternal(path, true);
   }
 
   /**
-    * Retrieves the public key associated with a particular BIP32 path from the ledger app.
-    *
-    * @param path - the path to retrieve.
-    */
-  async getPublicKey(
-    path: string,
-  ): Promise<GetPublicKeyResult> {
+   * Retrieves the public key associated with a particular BIP32 path from the ledger app.
+   *
+   * @param path - the path to retrieve.
+   */
+  async getPublicKey(path: string): Promise<GetPublicKeyResult> {
     return this.getPublicKeyInternal(path, false);
   }
 
@@ -88,11 +90,11 @@ export class Common {
     const payload = buildBip32KeyPayload(path);
     const response = await this.sendChunks(cla, ins, p1, p2, payload);
     const keySize = response[0];
-    const publicKey = response.slice(1, keySize+1); // slice uses end index.
-    let address : Uint8Array | null = null;
-    if (response.length > keySize+2) {
-      const addressSize = response[keySize+1];
-      address = response.slice(keySize+2, keySize+2+addressSize);
+    const publicKey = response.slice(1, keySize + 1); // slice uses end index.
+    let address: Uint8Array | null = null;
+    if (response.length > keySize + 2) {
+      const addressSize = response[keySize + 1];
+      address = response.slice(keySize + 2, keySize + 2 + addressSize);
     }
     const res: GetPublicKeyResult = {
       publicKey: publicKey,
@@ -102,11 +104,11 @@ export class Common {
   }
 
   /**
-    * Sign a transaction with the key at a BIP32 path.
-    *
-    * @param txn - The transaction; this can be any of a node Buffer, Uint8Array, or a hexadecimal string, encoding the form of the transaction appropriate for hashing and signing.
-    * @param path - the path to use when signing the transaction.
-    */
+   * Sign a transaction with the key at a BIP32 path.
+   *
+   * @param txn - The transaction; this can be any of a node Buffer, Uint8Array, or a hexadecimal string, encoding the form of the transaction appropriate for hashing and signing.
+   * @param path - the path to use when signing the transaction.
+   */
   async signTransaction(
     path: string,
     txn: string | Buffer | Uint8Array,
@@ -118,26 +120,30 @@ export class Common {
     const p2 = 0;
     // Transaction payload is the byte length as uint32le followed by the bytes
     // Type guard not actually required but TypeScript can't tell that.
-    if(this.verbose) this.log(txn);
-    const rawTxn = typeof txn == "string" ? Buffer.from(txn, "hex") : Buffer.from(txn);
+    if (this.verbose) this.log(txn);
+    const rawTxn =
+      typeof txn == 'string' ? Buffer.from(txn, 'hex') : Buffer.from(txn);
     const hashSize = Buffer.alloc(4);
     hashSize.writeUInt32LE(rawTxn.length, 0);
     // Bip32key payload same as getPublicKey
     const bip32KeyPayload = buildBip32KeyPayload(path);
     // These are just squashed together
     const payload_txn = Buffer.concat([hashSize, rawTxn]);
-    this.log("Payload Txn", payload_txn);
+    this.log('Payload Txn', payload_txn);
     // TODO batch this since the payload length can be uint32le.max long
-    const signature = await this.sendChunks(cla, ins, p1, p2, [payload_txn, bip32KeyPayload]);
+    const signature = await this.sendChunks(cla, ins, p1, p2, [
+      payload_txn,
+      bip32KeyPayload,
+    ]);
     return {
       signature,
     };
   }
 
   /**
-    * Retrieve the app version on the attached ledger device.
-    * @alpha TODO this doesn't exist yet
-    */
+   * Retrieve the app version on the attached ledger device.
+   * @alpha TODO this doesn't exist yet
+   */
 
   async getVersion(): Promise<GetVersionResult> {
     // const [major, minor, patch, ...appName] = await this.sendChunks(
@@ -152,7 +158,7 @@ export class Common {
       0x00,
       0x00,
       0x00,
-      Buffer.alloc(1)
+      Buffer.alloc(1),
     );
     return {
       major: chunks[0],
@@ -160,7 +166,7 @@ export class Common {
       patch: chunks[2],
     };
   }
-  
+
   /**
    * Send a raw payload as chunks to a particular APDU instruction.
    *
@@ -173,18 +179,24 @@ export class Common {
     ins: number,
     p1: number,
     p2: number,
-    payload: Buffer | Buffer[]
+    payload: Buffer | Buffer[],
   ): Promise<Buffer> {
     let rv = Buffer.alloc(0);
-    let chunkSize=230;
-    if( payload instanceof Array ){
+    const chunkSize = 230;
+    if (payload instanceof Array) {
       payload = Buffer.concat(payload);
     }
-    for(let i=0;i<payload.length;i+=chunkSize) {
-      rv = await this.transport.send(cla, ins, p1, p2, payload.slice(i, i+chunkSize));
+    for (let i = 0; i < payload.length; i += chunkSize) {
+      rv = await this.transport.send(
+        cla,
+        ins,
+        p1,
+        p2,
+        payload.slice(i, i + chunkSize),
+      );
     }
     // Remove the status code here instead of in signTransaction, because sendWithBlocks _has_ to handle it.
-    return rv.slice(0,-2);
+    return rv.slice(0, -2);
   }
 
   /**
@@ -199,19 +211,19 @@ export class Common {
     payload: Buffer | Buffer[],
     // Constant (protocol dependent) data that the ledger may want to refer to
     // besides the payload.
-    extraData: Map<String, Buffer> = new Map<String, Buffer>()
+    extraData: Map<string, Buffer> = new Map<string, Buffer>(),
   ): Promise<Buffer> {
     let rv;
-    let chunkSize=180;
-    if(!( payload instanceof Array)) {
+    const chunkSize = 180;
+    if (!(payload instanceof Array)) {
       payload = [payload];
     }
-    let parameterList : Buffer[] = [];
-    let data = new Map<String, Buffer>(extraData);
-    for(let j=0; j<payload.length; j++) {
-      let chunkList : Buffer[] = [];
-      for(let i=0; i<payload[j].length; i+=chunkSize) {
-        let cur = payload[j].slice(i, i+chunkSize);
+    const parameterList: Buffer[] = [];
+    let data = new Map<string, Buffer>(extraData);
+    for (let j = 0; j < payload.length; j++) {
+      const chunkList: Buffer[] = [];
+      for (let i = 0; i < payload[j].length; i += chunkSize) {
+        const cur = payload[j].slice(i, i + chunkSize);
         chunkList.push(cur);
       }
       // Store the hash that points to the "rest of the list of chunks"
@@ -221,9 +233,9 @@ export class Common {
       // We have to do it this way, because a block knows the hash of
       // the next block.
       data = chunkList.reduceRight((blocks, chunk) => {
-        let linkedChunk = Buffer.concat([lastHash, chunk]);
-        this.log("Chunk: ", chunk);
-        this.log("linkedChunk: ", linkedChunk);
+        const linkedChunk = Buffer.concat([lastHash, chunk]);
+        this.log('Chunk: ', chunk);
+        this.log('linkedChunk: ', linkedChunk);
         lastHash = Buffer.from(sha256(linkedChunk));
         blocks.set(lastHash.toString('hex'), linkedChunk);
         return blocks;
@@ -232,7 +244,14 @@ export class Common {
       lastHash = Buffer.alloc(32);
     }
     this.log(data);
-    return await this.handleBlocksProtocol(cla, ins, p1, p2, Buffer.concat([Buffer.from([HostToLedger.START])].concat(parameterList)), data);
+    return await this.handleBlocksProtocol(
+      cla,
+      ins,
+      p1,
+      p2,
+      Buffer.concat([Buffer.from([HostToLedger.START])].concat(parameterList)),
+      data,
+    );
   }
 
   async handleBlocksProtocol(
@@ -241,20 +260,20 @@ export class Common {
     p1: number,
     p2: number,
     initialPayload: Buffer,
-    data: Map<String, Buffer>
+    data: Map<string, Buffer>,
   ): Promise<Buffer> {
     let payload = initialPayload;
     let result = Buffer.alloc(0);
     do {
-      this.log("Sending payload to ledger: ", payload.toString('hex'));
-      let rv = await this.transport.send(cla, ins, p1, p2, payload);
-      this.log("Received response: ", rv);
+      this.log('Sending payload to ledger: ', payload.toString('hex'));
+      const rv = await this.transport.send(cla, ins, p1, p2, payload);
+      this.log('Received response: ', rv);
       var rv_instruction = rv[0];
-      let rv_payload = rv.slice(1,rv.length-2); // Last two bytes are a return code.
-      if ( ! (rv_instruction in LedgerToHost) ) {
-        throw new TypeError("Unknown instruction returned from ledger");
+      const rv_payload = rv.slice(1, rv.length - 2); // Last two bytes are a return code.
+      if (!(rv_instruction in LedgerToHost)) {
+        throw new TypeError('Unknown instruction returned from ledger');
       }
-      switch(rv_instruction) {
+      switch (rv_instruction) {
         case LedgerToHost.RESULT_ACCUMULATING:
         case LedgerToHost.RESULT_FINAL:
           result = Buffer.concat([result, rv_payload]);
@@ -262,11 +281,14 @@ export class Common {
           payload = Buffer.from([HostToLedger.RESULT_ACCUMULATING_RESPONSE]);
           break;
         case LedgerToHost.GET_CHUNK:
-          let chunk = data.get(rv_payload.toString('hex'));
-          this.log("Getting block ", rv_payload);
-          this.log("Found block ", chunk);
-          if( chunk ) {
-            payload = Buffer.concat([Buffer.from([HostToLedger.GET_CHUNK_RESPONSE_SUCCESS]), chunk]);
+          const chunk = data.get(rv_payload.toString('hex'));
+          this.log('Getting block ', rv_payload);
+          this.log('Found block ', chunk);
+          if (chunk) {
+            payload = Buffer.concat([
+              Buffer.from([HostToLedger.GET_CHUNK_RESPONSE_SUCCESS]),
+              chunk,
+            ]);
           } else {
             payload = Buffer.from([HostToLedger.GET_CHUNK_RESPONSE_FAILURE]);
           }
@@ -281,24 +303,24 @@ export class Common {
   }
 
   log(...args: any[]) {
-    if(this.verbose) console.log(args);
+    if (this.verbose) console.log(args);
   }
 }
 
 enum LedgerToHost {
   RESULT_ACCUMULATING = 0,
-    RESULT_FINAL = 1,
-    GET_CHUNK = 2,
-    PUT_CHUNK = 3
-};
+  RESULT_FINAL = 1,
+  GET_CHUNK = 2,
+  PUT_CHUNK = 3,
+}
 
 enum HostToLedger {
   START = 0,
-    GET_CHUNK_RESPONSE_SUCCESS = 1,
-    GET_CHUNK_RESPONSE_FAILURE = 2,
-    PUT_CHUNK_RESPONSE = 3,
-    RESULT_ACCUMULATING_RESPONSE = 4
-};
+  GET_CHUNK_RESPONSE_SUCCESS = 1,
+  GET_CHUNK_RESPONSE_FAILURE = 2,
+  PUT_CHUNK_RESPONSE = 3,
+  RESULT_ACCUMULATING_RESPONSE = 4,
+}
 
 export function buildBip32KeyPayload(path: string): Buffer {
   const paths = splitPath(path);
@@ -306,18 +328,18 @@ export function buildBip32KeyPayload(path: string): Buffer {
   // 1 byte with number of elements in u32 array path
   // Followed by the u32 array itself
   const payload = Buffer.alloc(1 + paths.length * 4);
-  payload[0] = paths.length
+  payload[0] = paths.length;
   paths.forEach((element, index) => {
     payload.writeUInt32LE(element, 1 + 4 * index);
   });
-  return payload
+  return payload;
 }
 
 // TODO use bip32-path library
 export function splitPath(path: string): number[] {
   const result: number[] = [];
-  const components = path.split("/");
-  components.forEach((element) => {
+  const components = path.split('/');
+  components.forEach(element => {
     let number = parseInt(element, 10);
 
     if (isNaN(number)) {

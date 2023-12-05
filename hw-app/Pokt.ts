@@ -1,3 +1,4 @@
+/* eslint-disable */
 /********************************************************************************
  *   Ledger Node JS API
  *   (c) 2016-2017 Ledger
@@ -14,11 +15,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ********************************************************************************/
-import type Transport from "@ledgerhq/hw-transport";
-import { Common, GetPublicKeyResult, SignTransactionResult, GetVersionResult, buildBip32KeyPayload, splitPath } from "./Common";
-
+import type Transport from '@ledgerhq/hw-transport';
 // @ts-ignore -- optional interface, should be any if not installed.
-import { AbstractSigner, Account } from "@pokt-foundation/pocketjs-signer";
+import { AbstractSigner, Account } from '@pokt-foundation/pocketjs-signer';
+
+import {
+  buildBip32KeyPayload,
+  Common,
+  GetPublicKeyResult,
+  GetVersionResult,
+  SignTransactionResult,
+  splitPath,
+} from './Common';
 
 // export { GetPublicKeyResult, SignTransactionResult, GetVersionResult };
 
@@ -48,20 +56,24 @@ export class LedgerPoktSigner extends AbstractSigner {
     this.path = path;
   }
 
-  getAddress() : string {
+  getAddress(): string {
     return this.address;
   }
 
-  getAccount() : Account {
-    return { address: this.address, publicKey: this.publicKey, privateKey: "UNAVAILABLE" };
+  getAccount(): Account {
+    return {
+      address: this.address,
+      publicKey: this.publicKey,
+      privateKey: 'UNAVAILABLE',
+    };
   }
 
-  getPublicKey() : string {
+  getPublicKey(): string {
     return this.publicKey;
   }
 
-  getPrivateKey() : string {
-    return "UNAVAILABLE";
+  getPrivateKey(): string {
+    return 'UNAVAILABLE';
   }
 
   async sign(payload: string): Promise<string> {
@@ -79,9 +91,8 @@ export class LedgerPoktSigner extends AbstractSigner {
  */
 
 export default class Pokt extends Common {
-  
   constructor(transport: Transport) {
-    super(transport, "PKT");
+    super(transport, 'PKT');
     this.sendChunks = this.sendWithBlocks;
   }
 
@@ -91,11 +102,11 @@ export default class Pokt extends Common {
   }
 
   /**
-    * Blind Sign a transaction with the key at a BIP32 path.
-    *
-    * @param txn - The transaction; this can be any of a node Buffer, Uint8Array, or a hexadecimal string, encoding the form of the transaction appropriate for hashing and signing.
-    * @param path - the path to use when signing the transaction.
-    */
+   * Blind Sign a transaction with the key at a BIP32 path.
+   *
+   * @param txn - The transaction; this can be any of a node Buffer, Uint8Array, or a hexadecimal string, encoding the form of the transaction appropriate for hashing and signing.
+   * @param path - the path to use when signing the transaction.
+   */
   async blindSignTransaction(
     path: string,
     txn: string | Buffer | Uint8Array,
@@ -107,20 +118,23 @@ export default class Pokt extends Common {
     const p2 = 0;
     // Transaction payload is the byte length as uint32le followed by the bytes
     // Type guard not actually required but TypeScript can't tell that.
-    if(this.verbose) this.log(txn);
-    const rawTxn = typeof txn == "string" ? Buffer.from(txn, "hex") : Buffer.from(txn);
+    if (this.verbose) this.log(txn);
+    const rawTxn =
+      typeof txn == 'string' ? Buffer.from(txn, 'hex') : Buffer.from(txn);
     const hashSize = Buffer.alloc(4);
     hashSize.writeUInt32LE(rawTxn.length, 0);
     // Bip32key payload same as getPublicKey
     const bip32KeyPayload = buildBip32KeyPayload(path);
     // These are just squashed together
     const payload_txn = Buffer.concat([hashSize, rawTxn]);
-    this.log("Payload Txn", payload_txn);
+    this.log('Payload Txn', payload_txn);
     // TODO batch this since the payload length can be uint32le.max long
-    const signature = await this.sendChunks(cla, ins, p1, p2, [payload_txn, bip32KeyPayload]);
+    const signature = await this.sendChunks(cla, ins, p1, p2, [
+      payload_txn,
+      bip32KeyPayload,
+    ]);
     return {
       signature,
     };
   }
 }
-

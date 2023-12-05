@@ -1,63 +1,85 @@
-import { usePocketWallet } from "@/contexts/PocketWallet";
-import { useTransport } from "@/contexts/Transport";
-import { Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Text, ModalProps, Button } from "@chakra-ui/react";
-import { useEffect } from "react";
+import {
+  Button,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  ModalProps,
+  Text,
+} from '@chakra-ui/react';
+import { useEffect } from 'react';
 
+import { usePocketWallet } from '@/contexts/PocketWallet';
+import { useTransport } from '@/contexts/Transport';
 
-export function ConnectPoktModal(props: ModalProps) {
-    const { connectLedgerDevice, isUsingHardwareWallet } = useTransport()
-    const { connectPocketWallet, poktAddress, poktNetwork } = usePocketWallet()
+export const ConnectPoktModal: React.FC<
+  Omit<ModalProps, 'children'>
+> = props => {
+  const { connectLedgerDevice, isUsingHardwareWallet } = useTransport();
+  const { connectPocketWallet, poktAddress, poktNetwork } = usePocketWallet();
 
-    const poktWalletOptions = [
-        {
-            name: "SendWallet / NodeWallet",
-            onConnect: () => {
-                connectPocketWallet()
-            }
-        },
-        {
-            name: "Ledger",
-            onConnect: async () => {
-                await connectLedgerDevice()
-            }
-        },
-    ]
+  const poktWalletOptions = [
+    {
+      name: 'SendWallet / NodeWallet',
+      onConnect: () => {
+        connectPocketWallet();
+      },
+    },
+    {
+      name: 'Ledger',
+      onConnect: async () => {
+        await connectLedgerDevice();
+      },
+    },
+  ];
 
-    useEffect(() => {
-        if (isUsingHardwareWallet) connectPocketWallet()
-        if (poktAddress && poktNetwork) props.onClose()
-    }, [poktAddress, poktNetwork, isUsingHardwareWallet])
+  const { onClose } = props;
 
-    return (
-        <Modal {...props} size="md" isCentered>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader textAlign="center" color="poktBlue">Connect POKT Wallet</ModalHeader>
-                <ModalCloseButton color="poktBlue" />
-                <ModalBody padding={0}>
-                    <Flex
-                        direction="column"
-                        justify="center"
-                        align="center"
-                        padding={4}
-                        paddingX={8}
-                        gap={4}
-                        mb={4}
-                    >
-                        {poktWalletOptions.map((wallet, i) => (
-                            <Button
-                                key={i}
-                                colorScheme="blue"
-                                width="100%"
-                                onClick={wallet.onConnect}
-                            >
-                                <Text fontSize={16}>{wallet.name}</Text>
-                            </Button>
-                        ))}
-                        
-                    </Flex>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-    )
-}
+  useEffect(() => {
+    if (isUsingHardwareWallet) connectPocketWallet();
+    if (poktAddress && poktNetwork) onClose();
+  }, [
+    poktAddress,
+    poktNetwork,
+    isUsingHardwareWallet,
+    onClose,
+    connectPocketWallet,
+  ]);
+
+  return (
+    <Modal size="md" isCentered {...props}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader textAlign="center" color="poktBlue">
+          Connect POKT Wallet
+        </ModalHeader>
+        <ModalCloseButton color="poktBlue" />
+        <ModalBody padding={0}>
+          <Flex
+            direction="column"
+            justify="center"
+            align="center"
+            padding={4}
+            paddingX={8}
+            gap={4}
+            mb={4}
+          >
+            {poktWalletOptions.map((wallet, i) => (
+              <Button
+                key={i}
+                colorScheme="blue"
+                width="100%"
+                onClick={wallet.onConnect}
+              >
+                <Text fontSize={16}>{wallet.name}</Text>
+              </Button>
+            ))}
+          </Flex>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+};

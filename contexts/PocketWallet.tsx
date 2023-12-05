@@ -9,6 +9,7 @@ import {
 import useSWR from 'swr';
 
 import { POKT_CHAIN_ID, POKT_RPC_URL } from '@/utils/constants';
+
 import { useTransport } from './Transport';
 
 declare global {
@@ -38,12 +39,12 @@ export const PocketWalletContext = createContext<PocketWalletContextType>({
   poktBalance: BigInt(0),
   poktNetwork: '',
   isBalanceLoading: false,
-  reloadPoktBalance: () => { },
+  reloadPoktBalance: () => {},
   poktAddress: '',
-  connectPocketWallet: async () => { },
+  connectPocketWallet: async () => {},
   sendPokt: async () => '',
   isPoktConnected: false,
-  resetPoktWallet: () => { },
+  resetPoktWallet: () => {},
 });
 
 export const usePocketWallet = (): PocketWalletContextType =>
@@ -52,7 +53,12 @@ export const usePocketWallet = (): PocketWalletContextType =>
 export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const { isUsingHardwareWallet, removeTransport, poktAddressHW, sendTransaction: sendPoktFromLedger } = useTransport();
+  const {
+    isUsingHardwareWallet,
+    removeTransport,
+    poktAddressHW,
+    sendTransaction: sendPoktFromLedger,
+  } = useTransport();
   const [poktAddress, setPoktAddress] = useState<string>('');
   const [poktNetwork, setPoktNetwork] = useState<string>('');
 
@@ -88,10 +94,12 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         });
         return;
       }
-  
+
       try {
-        const [address] = await window.pocketNetwork.send('pokt_requestAccounts');
-  
+        const [address] = await window.pocketNetwork.send(
+          'pokt_requestAccounts',
+        );
+
         let network = 'mainnet';
         try {
           const { chain } = await window.pocketNetwork.send('pokt_chain');
@@ -104,7 +112,7 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         } catch (e) {
           console.error('Error getting POKT network', e);
         }
-  
+
         setPoktAddress(address);
         setPoktNetwork(network);
       } catch (e) {
@@ -120,33 +128,32 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         setPoktNetwork('');
       }
     }
-  }, [toast, isUsingHardwareWallet]);
+  }, [toast, isUsingHardwareWallet, poktAddressHW]);
 
   const fetchPoktBalance = useCallback(
     async (address: string): Promise<undefined | bigint> => {
       if (isUsingHardwareWallet) {
-        let balance = BigInt(0)
+        let balance = BigInt(0);
         let balanceResponse;
         try {
           if (!address) return BigInt(0);
-          const poktGatewayUrl = POKT_RPC_URL;
-          const res = await fetch(`${poktGatewayUrl}/v1/query/balance`, {
-            method: "POST",
+          const res = await fetch(`${POKT_RPC_URL}/v1/query/balance`, {
+            method: 'POST',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               address,
               height: 0,
             }),
-          })
-          balanceResponse = await res.json()
+          });
+          balanceResponse = await res.json();
         } catch (error) {
-          console.log(error);
+          console.error('Error fetching POKT balance', error);
           return BigInt(0);
         }
         balance = balanceResponse?.balance?.toString();
-        return BigInt(balance)
+        return BigInt(balance);
       } else {
         if (!address || !window.pocketNetwork) return BigInt(0);
         const { balance } = await window.pocketNetwork.send('pokt_balance', [
@@ -155,7 +162,7 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         return BigInt(balance);
       }
     },
-    [],
+    [isUsingHardwareWallet],
   );
 
   const {
@@ -174,21 +181,25 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
         throw new Error('No POKT wallet connected');
       }
       if (isUsingHardwareWallet) {
-        if (poktAddressHW !== poktAddress) throw new Error('Wrong POKT address')
-        return await sendPoktFromLedger(recipient, amount, memo)
+        if (poktAddressHW !== poktAddress)
+          throw new Error('Wrong POKT address');
+        return await sendPoktFromLedger(recipient, amount, memo);
       } else {
-        const { hash } = await window.pocketNetwork.send('pokt_sendTransaction', [
-          {
-            amount: amount.toString(), // in uPOKT
-            from: poktAddress,
-            to: recipient,
-            memo: memo,
-          },
-        ]);
+        const { hash } = await window.pocketNetwork.send(
+          'pokt_sendTransaction',
+          [
+            {
+              amount: amount.toString(), // in uPOKT
+              from: poktAddress,
+              to: recipient,
+              memo: memo,
+            },
+          ],
+        );
         return hash;
       }
     },
-    [poktAddress],
+    [poktAddress, isUsingHardwareWallet, poktAddressHW, sendPoktFromLedger],
   );
 
   const isPoktConnected = useMemo(
@@ -197,10 +208,10 @@ export const PocketWalletProvider: React.FC<React.PropsWithChildren> = ({
   );
 
   const resetPoktWallet = useCallback(() => {
-    if (isUsingHardwareWallet) removeTransport()
+    if (isUsingHardwareWallet) removeTransport();
     setPoktAddress('');
     setPoktNetwork('');
-  }, []);
+  }, [isUsingHardwareWallet, removeTransport]);
 
   return (
     <PocketWalletContext.Provider
