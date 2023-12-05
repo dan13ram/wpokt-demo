@@ -46,10 +46,8 @@ export const ConnectPoktModal: React.FC<
     <Modal size="md" isCentered {...props}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textAlign="center" color="poktBlue">
-          Connect POKT Wallet
-        </ModalHeader>
-        <ModalCloseButton color="poktBlue" />
+        <ModalHeader textAlign="center">Connect POKT Wallet</ModalHeader>
+        <ModalCloseButton />
         <ModalBody padding={0}>
           <Flex
             direction="column"

@@ -192,7 +192,7 @@ const Header: React.FC = () => {
               <Text fontSize="sm">
                 Balance:{' '}
                 {loading ? (
-                  <Spinner thickness="2px" speed="0.65s" size="xs" />
+                  <Spinner thickness="2px" speed="0.65s" size="xs" as="span" />
                 ) : (
                   <Text as="span" fontWeight="bold">
                     {`${formatUnits(balance, 6)} wPOKT`}
@@ -216,7 +216,7 @@ const Header: React.FC = () => {
               <Text fontSize="sm">
                 Balance:{' '}
                 {isBalanceLoading ? (
-                  <Spinner thickness="2px" speed="0.65s" size="xs" />
+                  <Spinner thickness="2px" speed="0.65s" size="xs" as="span" />
                 ) : (
                   <Text as="span" fontWeight="bold">
                     {`${formatUnits(poktBalance, 6)} POKT`}

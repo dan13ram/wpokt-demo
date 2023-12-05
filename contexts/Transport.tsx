@@ -130,7 +130,10 @@ export const TransportProvider: React.FC<React.PropsWithChildren> = ({
       }
     }
 
-    return error;
+    if (error) {
+      throw error;
+    }
+    throw new Error('No transport found');
   }, [initializePocketApp, pocketApp]);
 
   const onSelectDevice = useCallback(async () => {
@@ -233,22 +236,22 @@ export const TransportProvider: React.FC<React.PropsWithChildren> = ({
 
         const pk = await pocketApp?.getPublicKey(LEDGER_CONFIG.derivationPath);
         if (!pk || !sig) throw Error('No public key or signature found');
+
         const ledgerTxResponse = await dataSource.sendTransactionFromLedger(
           Buffer.from(pk.publicKey),
           Buffer.from(sig.signature),
           tx,
         );
         if (typeGuard(ledgerTxResponse, Error)) {
-          setIsHardwareWalletLoading(false);
-          return ledgerTxResponse;
+          throw ledgerTxResponse;
         }
 
-        setIsHardwareWalletLoading(false);
         return ledgerTxResponse;
       } catch (e) {
-        console.error('error: ', e);
+        console.error('Error sending transaction: ', e);
+        throw e;
+      } finally {
         setIsHardwareWalletLoading(false);
-        return e;
       }
     },
     [getPoktAddressFromLedger, pocketApp],
