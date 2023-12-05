@@ -24,6 +24,7 @@ import { POKT_CHAIN_ID } from '@/utils/constants';
 import { shortenHex } from '@/utils/helpers';
 import { PAGE_MAX_WIDTH, PAGE_PADDING_X } from '@/utils/theme';
 
+import { ConnectPoktModal } from './ConnectPoktModal';
 import { EthIcon } from './EthIcon';
 import { PocketWalletModal } from './PocketWalletModal';
 import { PoktIcon } from './PoktIcon';
@@ -63,8 +64,8 @@ const InvalidNetwork: React.FC = () => {
           {isInvalidEthNetwork
             ? 'ETH wallet is'
             : isInvalidPoktNetwork
-            ? 'POKT wallet is'
-            : 'wallets are'}{' '}
+              ? 'POKT wallet is'
+              : 'wallets are'}{' '}
           connected to an unsupported network.
         </AlertDescription>
       </Alert>
@@ -104,7 +105,8 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
 
   const { open } = useWeb3Modal();
 
-  const { poktAddress, connectPocketWallet } = usePocketWallet();
+  const { poktAddress } = usePocketWallet();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>
@@ -130,7 +132,7 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
             {!poktAddress && (
               <Button
                 leftIcon={<PoktIcon boxSize="1.25rem" />}
-                onClick={connectPocketWallet}
+                onClick={onOpen}
                 colorScheme="blue"
               >
                 Connect POKT Wallet
@@ -140,6 +142,7 @@ const WagmiConnectionManager: React.FC<PropsWithChildren> = ({ children }) => {
         </VStack>
       )}
       {(!!address || !!poktAddress) && <InvalidNetwork />}
+      <ConnectPoktModal isOpen={isOpen} onClose={onClose} />
       {children}
     </>
   );
@@ -189,7 +192,7 @@ const Header: React.FC = () => {
               <Text fontSize="sm">
                 Balance:{' '}
                 {loading ? (
-                  <Spinner thickness="2px" speed="0.65s" size="xs" />
+                  <Spinner thickness="2px" speed="0.65s" size="xs" as="span" />
                 ) : (
                   <Text as="span" fontWeight="bold">
                     {`${formatUnits(balance, 6)} wPOKT`}
@@ -213,7 +216,7 @@ const Header: React.FC = () => {
               <Text fontSize="sm">
                 Balance:{' '}
                 {isBalanceLoading ? (
-                  <Spinner thickness="2px" speed="0.65s" size="xs" />
+                  <Spinner thickness="2px" speed="0.65s" size="xs" as="span" />
                 ) : (
                   <Text as="span" fontWeight="bold">
                     {`${formatUnits(poktBalance, 6)} POKT`}
