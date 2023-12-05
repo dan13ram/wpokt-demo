@@ -24,15 +24,11 @@ export const ConnectPoktModal: React.FC<
   const poktWalletOptions = [
     {
       name: 'SendWallet / NodeWallet',
-      onConnect: () => {
-        connectPocketWallet();
-      },
+      onConnect: connectPocketWallet,
     },
     {
       name: 'Ledger',
-      onConnect: async () => {
-        await connectLedgerDevice();
-      },
+      onConnect: connectLedgerDevice,
     },
   ];
 
@@ -40,14 +36,11 @@ export const ConnectPoktModal: React.FC<
 
   useEffect(() => {
     if (isUsingHardwareWallet) connectPocketWallet();
+  }, [isUsingHardwareWallet, connectPocketWallet]);
+
+  useEffect(() => {
     if (poktAddress && poktNetwork) onClose();
-  }, [
-    poktAddress,
-    poktNetwork,
-    isUsingHardwareWallet,
-    onClose,
-    connectPocketWallet,
-  ]);
+  }, [poktAddress, poktNetwork, onClose]);
 
   return (
     <Modal size="md" isCentered {...props}>
