@@ -13,12 +13,12 @@ import {
 import { useEffect } from 'react';
 
 import { usePocketWallet } from '@/contexts/PocketWallet';
-// import { useTransport } from '@/contexts/Transport';
+import { useTransport } from '@/contexts/Transport';
 
 export const ConnectPoktModal: React.FC<
   Omit<ModalProps, 'children'>
 > = props => {
-  // const { connectLedgerDevice, isUsingHardwareWallet } = useTransport();
+  const { connectLedgerDevice, isUsingHardwareWallet } = useTransport();
   const { connectPocketWallet, poktAddress, poktNetwork } = usePocketWallet();
 
   const poktWalletOptions = [
@@ -26,17 +26,17 @@ export const ConnectPoktModal: React.FC<
       name: 'SendWallet / NodeWallet',
       onConnect: connectPocketWallet,
     },
-    // {
-    //   name: 'Ledger',
-    //   onConnect: connectLedgerDevice,
-    // },
+    {
+      name: 'Ledger',
+      onConnect: connectLedgerDevice,
+    },
   ];
 
   const { onClose } = props;
 
-  // useEffect(() => {
-  //   if (isUsingHardwareWallet) connectPocketWallet();
-  // }, [isUsingHardwareWallet, connectPocketWallet]);
+  useEffect(() => {
+    if (isUsingHardwareWallet) connectPocketWallet();
+  }, [isUsingHardwareWallet, connectPocketWallet]);
 
   useEffect(() => {
     if (poktAddress && poktNetwork) onClose();
