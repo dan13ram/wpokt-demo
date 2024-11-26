@@ -26,7 +26,7 @@ export default function useHealth(): {
     const seen: Record<string, Health> = {};
 
     data.forEach((h: Health) => {
-      const key = h.wpokt_address.toLowerCase();
+      const key = h.pokt_address.toLowerCase();
       if (!seen[key] || h.updated_at > seen[key].updated_at) {
         seen[key] = h;
       }
